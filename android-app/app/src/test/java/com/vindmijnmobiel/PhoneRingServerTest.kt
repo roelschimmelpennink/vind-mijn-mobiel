@@ -4,6 +4,7 @@ import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import fi.iki.elonen.NanoHTTPD
 import java.net.HttpURLConnection
 import java.net.URL
 
