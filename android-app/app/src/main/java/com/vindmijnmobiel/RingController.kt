@@ -15,17 +15,24 @@ class RingController(private val context: Context) : RingPlayer {
     override fun startRinging() {
         if (isRinging) return
         val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-            )
-            setDataSource(context, alarmUri)
-            isLooping = true
-            prepare()
-            start()
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            ?: return
+        try {
+            mediaPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                setDataSource(context, alarmUri)
+                isLooping = true
+                prepare()
+                start()
+            }
+        } catch (e: Exception) {
+            mediaPlayer?.release()
+            mediaPlayer = null
         }
     }
 
