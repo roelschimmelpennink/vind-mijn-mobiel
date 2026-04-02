@@ -1,0 +1,52 @@
+package com.vindmijnmobiel
+
+import android.app.Notification
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+
+class RingService : Service() {
+
+    private var server: PhoneRingServer? = null
+    private lateinit var ringController: RingController
+
+    override fun onCreate() {
+        super.onCreate()
+        ringController = RingController(this)
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground(NOTIFICATION_ID, buildNotification())
+        server = PhoneRingServer(PORT, ringController).also { it.start() }
+        return START_STICKY
+    }
+
+    override fun onDestroy() {
+        server?.stop()
+        ringController.stopRinging()
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun buildNotification(): Notification {
+        val openApp = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        return NotificationCompat.Builder(this, getString(R.string.channel_id))
+            .setContentTitle(getString(R.string.notification_title))
+            .setContentText(getString(R.string.notification_text))
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentIntent(openApp)
+            .build()
+    }
+
+    companion object {
+        const val PORT = 5000
+        const val NOTIFICATION_ID = 1
+    }
+}
