@@ -24,8 +24,7 @@ class PhoneRingServerTest {
     fun setUp() {
         fakePlayer = FakeRingPlayer()
         server = PhoneRingServer(15000, fakePlayer)
-        server.start()
-        Thread.sleep(100)
+        server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, true)
     }
 
     @After
@@ -37,7 +36,8 @@ class PhoneRingServerTest {
         val conn = URL("http://localhost:15000$path").openConnection() as HttpURLConnection
         conn.requestMethod = "GET"
         val code = conn.responseCode
-        val body = conn.inputStream.bufferedReader().readText()
+        val stream = if (code >= 400) conn.errorStream else conn.inputStream
+        val body = stream.bufferedReader().readText()
         conn.disconnect()
         return code to body
     }
@@ -61,6 +61,27 @@ class PhoneRingServerTest {
     @Test
     fun `GET ring response includes CORS header`() {
         val conn = URL("http://localhost:15000/ring").openConnection() as HttpURLConnection
+        conn.requestMethod = "GET"
+        conn.connect()
+        val cors = conn.getHeaderField("Access-Control-Allow-Origin")
+        conn.disconnect()
+        assertEquals("*", cors)
+    }
+
+    @Test
+    fun `GET stop response includes CORS header`() {
+        val conn = URL("http://localhost:15000/stop").openConnection() as HttpURLConnection
+        conn.requestMethod = "GET"
+        conn.connect()
+        val cors = conn.getHeaderField("Access-Control-Allow-Origin")
+        conn.disconnect()
+        assertEquals("*", cors)
+    }
+
+    @Test
+    fun `unknown path response includes CORS header`() {
+        val conn = URL("http://localhost:15000/unknown").openConnection() as HttpURLConnection
+        conn.requestMethod = "GET"
         conn.connect()
         val cors = conn.getHeaderField("Access-Control-Allow-Origin")
         conn.disconnect()
