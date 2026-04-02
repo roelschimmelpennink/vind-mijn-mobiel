@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vind Mijn Mobiel</string>
+    <string name="phone_address">Phone address (enter in web client):</string>
+    <string name="start_service">Start ring server</string>
+    <string name="stop_service">Stop ring server</string>
+    <string name="notification_title">Vind Mijn Mobiel</string>
+    <string name="notification_text">Ring server is active on port 5000</string>
+    <string name="channel_id">ring_service_channel</string>
+</resources>
