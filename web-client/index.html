@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vind Mijn Mobiel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+            gap: 16px;
+        }
+        h1 { font-size: 2rem; }
+        .ip-row {
+            display: flex;
+            gap: 8px;
+        }
+        input {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 180px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #btnSave  { background: #1976d2; color: white; }
+        #btnRing  { background: #d32f2f; color: white; font-size: 1.5rem; padding: 20px 60px; margin-top: 16px; }
+        #btnStop  { background: #616161; color: white; }
+        #status   { font-size: 0.9rem; color: #555; height: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Vind Mijn Mobiel</h1>
+
+    <div class="ip-row">
+        <input id="ipInput" type="text" placeholder="192.168.1.x" />
+        <button id="btnSave" onclick="saveIp()">Save</button>
+    </div>
+
+    <button id="btnRing" onclick="sendCommand('ring')">Ring</button>
+    <button id="btnStop" onclick="sendCommand('stop')">Stop</button>
+
+    <div id="status"></div>
+
+    <script>
+        const ipInput = document.getElementById('ipInput');
+        const status  = document.getElementById('status');
+
+        ipInput.value = localStorage.getItem('phoneIp') || '';
+
+        function saveIp() {
+            localStorage.setItem('phoneIp', ipInput.value.trim());
+            setStatus('IP saved.');
+        }
+
+        async function sendCommand(cmd) {
+            const ip = ipInput.value.trim();
+            if (!ip) { setStatus('Enter the phone IP address first.'); return; }
+            setStatus('Sending...');
+            try {
+                const res = await fetch(`http://${ip}:5000/${cmd}`);
+                setStatus(res.ok
+                    ? (cmd === 'ring' ? 'Ringing!' : 'Stopped.')
+                    : `Server error: ${res.status}`);
+            } catch {
+                setStatus('Could not reach phone. Is the ring server running?');
+            }
+        }
+
+        function setStatus(msg) {
+            status.textContent = msg;
+        }
+    </script>
+</body>
+</html>
