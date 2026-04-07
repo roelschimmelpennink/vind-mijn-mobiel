@@ -17,16 +17,24 @@
             gap: 16px;
         }
         h1 { font-size: 2rem; }
-        .ip-row {
+        h2 { font-size: 1rem; color: #555; font-weight: normal; }
+        .row {
             display: flex;
             gap: 8px;
+        }
+        .divider {
+            width: 100%;
+            max-width: 400px;
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 8px 0;
         }
         input {
             padding: 8px 12px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            width: 180px;
+            width: 240px;
         }
         button {
             padding: 10px 20px;
@@ -35,34 +43,54 @@
             border-radius: 6px;
             cursor: pointer;
         }
-        #btnSave  { background: #1976d2; color: white; }
-        #btnRing  { background: #d32f2f; color: white; font-size: 1.5rem; padding: 20px 60px; margin-top: 16px; }
-        #btnStop  { background: #616161; color: white; }
-        #status   { font-size: 0.9rem; color: #555; height: 20px; }
+        #btnSaveIp      { background: #1976d2; color: white; }
+        #btnRing        { background: #d32f2f; color: white; font-size: 1.5rem; padding: 20px 60px; }
+        #btnStop        { background: #616161; color: white; }
+        #btnSaveNtfy    { background: #1976d2; color: white; }
+        #btnRingInternet { background: #c62828; color: white; font-size: 1.5rem; padding: 20px 40px; }
+        #btnStopInternet { background: #424242; color: white; }
+        #status         { font-size: 0.9rem; color: #555; height: 20px; }
     </style>
 </head>
 <body>
     <h1>Vind Mijn Mobiel</h1>
 
-    <div class="ip-row">
+    <h2>WiFi (zelfde netwerk)</h2>
+    <div class="row">
         <input id="ipInput" type="text" placeholder="192.168.1.x" />
-        <button id="btnSave" onclick="saveIp()">Save</button>
+        <button id="btnSaveIp" onclick="saveIp()">Save</button>
     </div>
-
     <button id="btnRing" onclick="sendCommand('ring')">Ring</button>
     <button id="btnStop" onclick="sendCommand('stop')">Stop</button>
+
+    <hr class="divider">
+
+    <h2>Internet (mobiele data)</h2>
+    <div class="row">
+        <input id="ntfyInput" type="text" placeholder="ntfy topic (UUID)" />
+        <button id="btnSaveNtfy" onclick="saveNtfy()">Save</button>
+    </div>
+    <button id="btnRingInternet" onclick="sendNtfy('ring')">Ring</button>
+    <button id="btnStopInternet" onclick="sendNtfy('stop')">Stop</button>
 
     <div id="status"></div>
 
     <script>
-        const ipInput = document.getElementById('ipInput');
-        const status  = document.getElementById('status');
+        const ipInput   = document.getElementById('ipInput');
+        const ntfyInput = document.getElementById('ntfyInput');
+        const status    = document.getElementById('status');
 
-        ipInput.value = localStorage.getItem('phoneIp') || '';
+        ipInput.value   = localStorage.getItem('phoneIp')   || '';
+        ntfyInput.value = localStorage.getItem('ntfyTopic') || '';
 
         function saveIp() {
             localStorage.setItem('phoneIp', ipInput.value.trim());
             setStatus('IP saved.');
+        }
+
+        function saveNtfy() {
+            localStorage.setItem('ntfyTopic', ntfyInput.value.trim());
+            setStatus('Ntfy topic saved.');
         }
 
         async function sendCommand(cmd) {
@@ -76,6 +104,23 @@
                     : `Server error: ${res.status}`);
             } catch {
                 setStatus('Could not reach phone. Is the ring server running?');
+            }
+        }
+
+        async function sendNtfy(cmd) {
+            const topic = ntfyInput.value.trim();
+            if (!topic) { setStatus('Enter the ntfy topic first.'); return; }
+            setStatus('Sending...');
+            try {
+                const res = await fetch(`https://ntfy.sh/${topic}`, {
+                    method: 'POST',
+                    body: cmd
+                });
+                setStatus(res.ok
+                    ? (cmd === 'ring' ? 'Ringing! (internet)' : 'Stopped. (internet)')
+                    : `Server error: ${res.status}`);
+            } catch {
+                setStatus('Could not reach ntfy.sh. Check internet connection.');
             }
         }
 
