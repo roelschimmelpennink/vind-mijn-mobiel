@@ -3,6 +3,7 @@ package com.vindmijnmobiel
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
@@ -11,6 +12,7 @@ import androidx.core.app.NotificationCompat
 class RingService : Service() {
 
     private var server: PhoneRingServer? = null
+    private var ntfyListener: NtfyListener? = null
     private lateinit var ringController: RingController
 
     override fun onCreate() {
@@ -31,11 +33,19 @@ class RingService : Service() {
             startForeground(NOTIFICATION_ID, notification)
         }
         server = PhoneRingServer(PORT, ringController).also { it.start() }
+
+        val topic = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+            .getString("ntfy_topic", null)
+        if (topic != null) {
+            ntfyListener = NtfyListener(topic, ringController).also { it.start() }
+        }
+
         return START_STICKY
     }
 
     override fun onDestroy() {
         server?.stop()
+        ntfyListener?.stop()
         ringController.stopRinging()
         super.onDestroy()
     }

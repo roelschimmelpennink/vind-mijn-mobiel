@@ -17,9 +17,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="24dp"
         android:textSize="22sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ntfy_topic_label"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvNtfyTopic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="32dp"
+        android:textIsSelectable="true"
+        android:textSize="14sp" />
 
     <Button
         android:id="@+id/btnStartService"

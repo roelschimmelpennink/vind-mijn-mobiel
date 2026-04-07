@@ -3,6 +3,7 @@ package com.vindmijnmobiel
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -14,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.net.Inet4Address
 import java.net.NetworkInterface
+import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,12 +29,24 @@ class MainActivity : AppCompatActivity() {
         val ip = getLocalIpAddress()
         findViewById<TextView>(R.id.tvIpAddress).text = "$ip:${RingService.PORT}"
 
+        val topic = getOrCreateNtfyTopic()
+        findViewById<TextView>(R.id.tvNtfyTopic).text = topic
+
         findViewById<Button>(R.id.btnStartService).setOnClickListener {
             startForegroundService(Intent(this, RingService::class.java))
         }
 
         findViewById<Button>(R.id.btnStopService).setOnClickListener {
             stopService(Intent(this, RingService::class.java))
+        }
+    }
+
+    private fun getOrCreateNtfyTopic(): String {
+        val prefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        return prefs.getString("ntfy_topic", null) ?: run {
+            val topic = UUID.randomUUID().toString()
+            prefs.edit().putString("ntfy_topic", topic).apply()
+            topic
         }
     }
 
