@@ -60,4 +60,12 @@ class NtfyListenerTest {
         assertFalse(player.started)
         assertFalse(player.stopped)
     }
+
+    @Test
+    fun `handleLine partial word containing ring is ignored`() {
+        val player = FakeRingPlayer()
+        NtfyListener.handleLine("""data: {"id":"abc","message":"ringtone"}""", player)
+        assertFalse(player.started)
+        assertFalse(player.stopped)
+    }
 }

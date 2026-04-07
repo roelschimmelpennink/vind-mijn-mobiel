@@ -21,7 +21,13 @@ class NtfyListener(
                 } catch (e: InterruptedException) {
                     break
                 } catch (e: Exception) {
-                    if (running) Thread.sleep(5000)
+                    if (running) {
+                        try {
+                            Thread.sleep(5000)
+                        } catch (ie: InterruptedException) {
+                            break
+                        }
+                    }
                 }
             }
         }.apply {
@@ -39,7 +45,7 @@ class NtfyListener(
     private fun connect() {
         val conn = URL("https://ntfy.sh/$topic/sse").openConnection() as HttpURLConnection
         conn.connectTimeout = 10_000
-        conn.readTimeout = 0
+        conn.readTimeout = 0 // SSE streams stay open indefinitely; infinite read timeout is required
         try {
             val reader = BufferedReader(InputStreamReader(conn.inputStream))
             var line: String?
@@ -56,8 +62,8 @@ class NtfyListener(
             if (!line.startsWith("data:")) return
             val data = line.removePrefix("data:").trim()
             when {
-                data.contains("\"ring\"") -> player.startRinging()
-                data.contains("\"stop\"") -> player.stopRinging()
+                data.contains("\"message\":\"ring\"") -> player.startRinging()
+                data.contains("\"message\":\"stop\"") -> player.stopRinging()
             }
         }
     }
