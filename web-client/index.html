@@ -49,7 +49,7 @@
         #btnSaveNtfy    { background: #1976d2; color: white; }
         #btnRingInternet { background: #c62828; color: white; font-size: 1.5rem; padding: 20px 40px; }
         #btnStopInternet { background: #424242; color: white; }
-        #status         { font-size: 0.9rem; color: #555; height: 20px; }
+        #status         { font-size: 0.9rem; color: #555; min-height: 20px; }
     </style>
 </head>
 <body>
@@ -110,9 +110,13 @@
         async function sendNtfy(cmd) {
             const topic = ntfyInput.value.trim();
             if (!topic) { setStatus('Enter the ntfy topic first.'); return; }
+            if (topic.includes('://') || topic.includes('/')) {
+                setStatus('Enter just the topic name (UUID), not the full URL.');
+                return;
+            }
             setStatus('Sending...');
             try {
-                const res = await fetch(`https://ntfy.sh/${topic}`, {
+                const res = await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
                     method: 'POST',
                     body: cmd
                 });
