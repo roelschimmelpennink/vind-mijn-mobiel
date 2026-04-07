@@ -21,23 +21,26 @@ class RingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (server != null) return START_STICKY
-        val notification = buildNotification()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
+        if (server == null) {
+            val notification = buildNotification()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+            server = PhoneRingServer(PORT, ringController).also { it.start() }
         }
-        server = PhoneRingServer(PORT, ringController).also { it.start() }
 
-        val topic = getSharedPreferences("prefs", Context.MODE_PRIVATE)
-            .getString("ntfy_topic", null)
-        if (topic != null) {
-            ntfyListener = NtfyListener(topic, ringController).also { it.start() }
+        if (ntfyListener == null) {
+            val topic = getSharedPreferences("prefs", Context.MODE_PRIVATE)
+                .getString("ntfy_topic", null)
+            if (topic != null) {
+                ntfyListener = NtfyListener(topic, ringController).also { it.start() }
+            }
         }
 
         return START_STICKY

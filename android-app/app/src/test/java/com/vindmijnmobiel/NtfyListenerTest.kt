@@ -62,7 +62,7 @@ class NtfyListenerTest {
     }
 
     @Test
-    fun `handleLine partial word containing ring is ignored`() {
+    fun `handleLine value ringtone does not trigger ring command`() {
         val player = FakeRingPlayer()
         NtfyListener.handleLine("""data: {"id":"abc","message":"ringtone"}""", player)
         assertFalse(player.started)

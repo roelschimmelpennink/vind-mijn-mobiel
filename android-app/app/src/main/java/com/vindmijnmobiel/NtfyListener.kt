@@ -47,10 +47,11 @@ class NtfyListener(
         conn.connectTimeout = 10_000
         conn.readTimeout = 0 // SSE streams stay open indefinitely; infinite read timeout is required
         try {
-            val reader = BufferedReader(InputStreamReader(conn.inputStream))
-            var line: String?
-            while (running && reader.readLine().also { line = it } != null) {
-                handleLine(line!!, player)
+            BufferedReader(InputStreamReader(conn.inputStream)).use { reader ->
+                var line: String? = null
+                while (running && reader.readLine().also { line = it } != null) {
+                    handleLine(line!!, player)
+                }
             }
         } finally {
             conn.disconnect()
